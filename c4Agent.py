@@ -1,6 +1,8 @@
-from c4Board import c4Board
+from c4board import c4Board
 import numpy as np
 import random as rd
+import pickle 
+
 
 class Agent:
 	def __init__(self, color, eps, df, alpha):
@@ -43,10 +45,14 @@ class Agent:
 		for i in range(7):
 			if board.cols[i] != -1:
 				bcopy = board.board.copy()
-				bcopy[board.cols[i]][i] = color
-				if board.checkWin(bcopy, [board.cols[i], i]):
+				bcopy[board.cols[i]][i] = self.color
+				if board.checkWinVirtual(bcopy, board.cols[i], i):
 					return i
-				if self.state_value.get(self.getHash(bcopy)):
+
+				h = self.getHash(bcopy)
+
+				if self.state_value.get(h):
+					val = self.state_value[h]
 					if val > maxv:
 						maxv = val
 						moves = []
@@ -58,17 +64,26 @@ class Agent:
 						maxv = 0.5
 						moves = []
 						moves.append(i)
+		if len(moves) == 1:
+			return moves[0]
+		else:
+			return moves[rd.randint(0, len(moves)-1)]
 
 
 	def getHash(self, board): #get hash of current board
-		return ""
+		h = ""
+		dic = {0: "_", 2: "R", 1:"Y"}
+		for i in range(6):
+			for j in range(7):
+				h = h + dic[board[i][j]]
+		return h
 		
-	def saveStateValues(self):
-		f = open(self.color + "_state_values", "wb")
+	def saveModel(self):
+		f = open(str(self.color) + "_state_values.model", "wb")
 		pickle.dump(self.state_value, f)
 		f.close()
 
-	def getStateValues(self):
-		f = open(self.color + "_state_values", "rb")
+	def getModel(self):
+		f = open(str(self.color) + "_state_values.model", "rb")
 		self.state_value = pickle.load(f)
 		f.close()
