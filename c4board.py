@@ -93,8 +93,8 @@ class c4Board:
 		while True:
 			if not self.inBoundary(x, y) or color != board[x][y]:
 				break
-			x -= 1
-			y += 1
+			x += 1
+			y -= 1
 			count += 1
 			if count == 4:
 				return True
