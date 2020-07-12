@@ -3,7 +3,6 @@ import numpy as np
 import random as rd
 import pickle 
 
-
 class Agent:
 	def __init__(self, color, eps, df, alpha):
 		self.color = color
@@ -12,6 +11,13 @@ class Agent:
 		self.alpha = alpha
 		self.state_value = {}
 		self.game_states = []
+		self.rating = 1600
+
+	def calculateExpectedScore(self, oppRating):
+		return 1/(1+(10**((oppRating - self.rating)/400)))
+
+	def calculateRating(self, oppRating, res):
+		self.rating = self.rating + (16 * (res - self.calculateExpectedScore(oppRating)))
 
 	def getReward(self, reward):
 		tot_reward = reward
@@ -69,7 +75,6 @@ class Agent:
 		else:
 			return moves[rd.randint(0, len(moves)-1)]
 
-
 	def getHash(self, board): #get hash of current board
 		h = ""
 		dic = {0: "_", 2: "R", 1:"Y"}
@@ -77,7 +82,7 @@ class Agent:
 			for j in range(7):
 				h = h + dic[board[i][j]]
 		return h
-		
+	"""	
 	def saveModel(self):
 		f = open(str(self.color) + "_state_values.model", "wb")
 		pickle.dump(self.state_value, f)
@@ -87,3 +92,13 @@ class Agent:
 		f = open(str(self.color) + "_state_values.model", "rb")
 		self.state_value = pickle.load(f)
 		f.close()
+	"""
+class HumanAgent:
+	def __init__(self):
+		self.rating = 1600
+
+	def calculateExpectedScore(self, oppRating):
+		return 1/(1+(10**((oppRating - self.rating)/400)))
+
+	def calculateRating(self, oppRating, res):
+		self.rating = self.rating + (16 * (res - self.calculateExpectedScore(oppRating)))
