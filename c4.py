@@ -52,9 +52,16 @@ class Connect4:
 
 		for game in range(n):
 			win = False
-			if game%10000 == 0 and game != 0:
-				self.r.decayEps(0.4)
-				self.y.decayEps(0.4)
+			# if game%10000 == 0 and game != 0:
+			# 	self.r.decayEps(0.4)
+			# 	self.y.decayEps(0.4)
+
+			self.r.eps = 0
+			self.y.eps = 0
+
+			redR = self.r.rating
+			yellowR = self.y.rating
+
 			for i in range(42):
 				if i%2 == 0:
 					col = -1
@@ -73,8 +80,8 @@ class Connect4:
 						self.r.resetState()
 						self.y.resetState()
 						self.b.displayBoard()
-						self.r.calculateRating(self.y.rating, 1)
-						self.y.calculateRating(self.r.rating, 0)
+						self.r.calculateRating(yellowR, 1)
+						self.y.calculateRating(redR, 0)
 						print("GAME %s : Red wins.\n"%str(game))
 						win = True
 
@@ -96,8 +103,8 @@ class Connect4:
 						self.y.resetState()
 						self.r.resetState()
 						self.b.displayBoard()
-						self.r.calculateRating(self.y.rating, 0)
-						self.y.calculateRating(self.r.rating, 1)
+						self.r.calculateRating(yellowR, 0)
+						self.y.calculateRating(redR, 1)
 						print("GAME %s : Yellow wins.\n"%str(game))
 						win = True
 						break
@@ -107,20 +114,25 @@ class Connect4:
 				self.y.resetState()
 				self.r.resetState()
 				self.b.displayBoard()
-				self.r.calculateRating(self.y.rating, 0.5)
-				self.y.calculateRating(self.r.rating, 0.5)
+				self.r.calculateRating(yellowR, 0.5)
+				self.y.calculateRating(redR, 0.5)
 				print("GAME %s : Draw.\n"%str(game))
 			self.b.resetBoard()
 		self.saveAgentModel()
 
-	def playHuman(self, n):
+	def playHumanvsYellow(self, n):
 		self.getAgentModel()
+
 		for game in range(n):
 			win = False
 			self.r.eps = 0
 			self.y.eps = 0
+
+			yellowR = self.y.rating
+			humanR = self.h.rating
+
 			for i in range(42):
-				if i%2 == 0:
+				if i%2 == 0:  #human move
 					col = int(input("Enter input:"))
 					self.b.makeMove(self.r.color, col)
 					self.b.displayBoard()
@@ -129,12 +141,12 @@ class Connect4:
 					if self.b.checkWin():
 						self.y.getReward(0)
 						self.y.resetState()
-						self.h.calculateRating(self.y.rating, 1)
-						self.y.calculateRating(self.h.rating, 0)
-						print("GAME %s : Red wins.\n"%str(game))
+						self.h.calculateRating(yellowR, 1)
+						self.y.calculateRating(humanR, 0)
+						print("GAME %s : Human wins.\n"%str(game))
 						win = True
 						break
-				else:
+				else:   #yellow agent move
 					col = -1
 					if self.y.eps < rd.uniform(0, 1):
 						col = self.y.getBestMove(self.b)
@@ -150,8 +162,8 @@ class Connect4:
 					if self.b.checkWin():
 						self.y.getReward(1)
 						self.y.resetState()
-						self.y.calculateRating(self.h.rating, 1)
-						self.h.calculateRating(self.y.rating, 0)
+						self.y.calculateRating(humanR, 1)
+						self.h.calculateRating(yellowR, 0)
 						print("GAME %s : Yellow wins.\n"%str(game))
 						win = True
 						break
@@ -159,15 +171,76 @@ class Connect4:
 				print("GAME %s : Draw."%str(game))
 				self.y.getReward(0.4)
 				self.y.resetState()
-				self.y.calculateRating(self.h.rating, 0.5)
-				self.h.calculateRating(self.y.rating, 0.5)
+				self.y.calculateRating(humanR, 0.5)
+				self.h.calculateRating(yellowR, 0.5)
 
 			print("Human Rating: %s"%(str(c4.h.rating)))
 			print("Yellow Rating: %s"%(str(c4.y.rating)))
 			self.b.resetBoard()
 		self.saveAgentModel()
 
+	def playHumanvsRed(self, n):
+		self.getAgentModel()
+		for game in range(n):
+			win = False
+			self.r.eps = 0
+			self.y.eps = 0
+
+			redR = self.r.rating
+			humanR = self.h.rating
+
+			for i in range(42):
+				if i%2 == 0:  #red agent move
+					col = -1
+					if self.r.eps < rd.uniform(0, 1):
+						col = self.r.getBestMove(self.b)
+					else:
+						col = self.r.getRandomMove(self.b)
+
+					self.b.makeMove(self.r.color, col)
+					self.b.displayBoard()
+					h = self.r.getHash(self.b.board)
+					self.r.game_states.append(h)
+					print("\n")
+
+					if self.b.checkWin():
+						self.r.getReward(1)
+						self.r.resetState()
+						self.y.resetState()
+						self.r.calculateRating(humanR, 1)
+						self.h.calculateRating(redR, 0)
+						print("GAME %s : Red wins.\n"%str(game))
+						win = True
+						break
+					
+				else:  #human move
+					col = int(input("Enter input:"))
+					self.b.makeMove(self.y.color, col)
+					self.b.displayBoard()
+					print("\n")
+
+					if self.b.checkWin():
+						self.r.getReward(0)
+						self.r.resetState()
+						self.y.resetState()
+						self.r.calculateRating(humanR, 0)
+						self.h.calculateRating(redR, 1)
+						print("GAME %s : Human wins.\n"%str(game))
+						win = True
+						break
+			if win != True:
+				print("GAME %s : Draw."%str(game))
+				self.r.getReward(0.4)
+				self.r.resetState()
+				self.r.calculateRating(humanR, 0.5)
+				self.h.calculateRating(redR, 0.5)
+
+			print("Human Rating: %s"%(str(self.h.rating)))
+			print("Red Rating: %s"%(str(self.r.rating)))
+			self.b.resetBoard()
+		self.saveAgentModel()
+
 c4 = Connect4()
-c4.play(50000)
-print(c4.r.rating)
-print(c4.y.rating)
+# c4.playHumanvsRed(1)
+# print(c4.r.rating)
+# print(c4.y.rating)

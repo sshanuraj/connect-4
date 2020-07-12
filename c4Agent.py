@@ -54,9 +54,7 @@ class Agent:
 				bcopy[board.cols[i]][i] = self.color
 				if board.checkWinVirtual(bcopy, board.cols[i], i):
 					return i
-
 				h = self.getHash(bcopy)
-
 				if self.state_value.get(h):
 					val = self.state_value[h]
 					if val > maxv:
@@ -69,6 +67,8 @@ class Agent:
 					if 0.5 > maxv:
 						maxv = 0.5
 						moves = []
+						moves.append(i)
+					elif 0.5 == maxv:
 						moves.append(i)
 		if len(moves) == 1:
 			return moves[0]
