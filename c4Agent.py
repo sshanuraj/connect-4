@@ -15,28 +15,36 @@ class Agent:
 		self.state_value = {}
 		self.game_states = []
 		self.rating = 1600
-		self.nnModel = Sequential()
+		self.nnModel = 0
 		self.initNNModel()
 
 	def initNNModel(self):
-		self.nnModel.add(Dense(20, activation = "tanh", input_dim = 42))
-		self.nnModel.add(Dense(20, activation = "tanh"))
-		self.nnModel.add(Dense(7, activation = "sigmoid"))
+		pass
 
 	def train(self):
 		X = self.getInput()
 		Y = self.getLabels()
 		print(len(X), len(Y))
 		print(X.shape, Y.shape)
+		self.nnModel = Sequential()
+		self.nnModel.add(Dense(20, activation = "tanh", input_dim = 42))
+		self.nnModel.add(Dense(20, activation = "tanh"))
+		self.nnModel.add(Dense(7, activation = "sigmoid"))
 		sgd = optimizers.SGD(lr = 0.2, clipnorm = 1.)
 		self.nnModel.compile(loss = "mse", optimizer = sgd, metrics = ["accuracy"])
-		self.nnModel.fit(X, Y, epochs = 1000)
+		self.nnModel.fit(X, Y, epochs = 10)
+		self.nnModel.save_weights("nn_%s_weights.h5"%(str(self.color)))
 
 	def getBestMoveNN(self, board):
 		inp = [] 
-		inp.append(self.getNextStateVals(board))
-		m = model.predict(np.array(inp))
+		inp.append(self.serialize(self.getHash(board.board)))
+		self.nnModel.load_weights("nn_%s_weights.h5"%(str(self.color)))
+		m = self.nnModel.predict(np.array(inp))
 		print(m)
+		for i in range(7):
+			if board.cols[i] == -1:
+				m[0][i] = 0
+		return np.where(m[0] == max(m[0]))[0][0]
 
 	def getBoardFromHash(self, h):
 		board = np.zeros((6, 7))
@@ -152,9 +160,6 @@ class Agent:
 					k = k - 1
 
 				bcopy[k][i] = self.color
-				# if board.checkWinVirtual(bcopy, board.cols[i], i):
-				# 	vals.append(1)
-				# 	continue
 
 				h = self.getHash(bcopy)
 

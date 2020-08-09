@@ -243,9 +243,10 @@ class Connect4:
 		self.saveAgentModel()
 
 c4 = Connect4()
-# c4.play(100_000)
-c4.r.train()
-c4.y.train()
+# # c4.play(100_000)
+# c4.r.train()
+# c4.y.train()
+# # c4.saveAgentModel()
 # c4.saveAgentModel()
-c4.saveAgentModel()
+c4.playHumanvsYellow(1)
 
