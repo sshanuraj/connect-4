@@ -9,14 +9,14 @@ YELLOW = 1
 
 class Connect4:
 	def __init__(self):
-		self.r = Agent(RED, 0.85, 0.9, 0.9)  #agent(color, epsilon, discount_factor, alpha)
-		self.y = Agent(YELLOW, 0.85, 0.9, 0.9)
-		self.h = HumanAgent()
+		self.r = 0  #agent(color, epsilon, discount_factor, alpha)
+		self.y = 0
+		self.h = 0
+		self.getAgentModel()
 		self.b = c4Board()
 
 	def getAgentModel(self):
 		filenames = ["1_agent.model", "2_agent.model", "h_agent.model"]
-		agents = [self.y, self.r, self.h]
 		i = 0
 		for file in filenames:
 			if os.path.isfile(file):
@@ -31,6 +31,12 @@ class Connect4:
 				f.close()
 			else:
 				print("%s not found."%(file))
+				if file == "1_agent.model":
+					self.y = Agent(YELLOW, 0.8, 0.9, 0.9)
+				elif file == "2_agent.model":
+					self.r = Agent(RED, 0.8, 0.9, 0.9)
+				else:
+					self.h = HumanAgent()
 			i += 1
 
 	def saveAgentModel(self):
@@ -46,18 +52,18 @@ class Connect4:
 		print("Agents saved.")
 
 	def play(self, n):
-		self.getAgentModel()
 		# print(len(self.y.state_value))
 		# print(len(self.r.state_value))
-
+		self.r.setEpsilon(0.85)
+		self.y.setEpsilon(0.85)
 		for game in range(n):
 			win = False
-			# if game%10000 == 0 and game != 0:
-			# 	self.r.decayEps(0.4)
-			# 	self.y.decayEps(0.4)
+			if game%20000 == 0 and game != 0:
+				self.r.decayEps(0.5)
+				self.y.decayEps(0.5)
 
-			self.r.eps = 0
-			self.y.eps = 0
+			# self.r.eps = 0
+			# self.y.eps = 0
 
 			redR = self.r.rating
 			yellowR = self.y.rating
@@ -84,7 +90,6 @@ class Connect4:
 						self.y.calculateRating(redR, 0)
 						print("GAME %s : Red wins.\n"%str(game))
 						win = True
-
 						break
 				else:
 					col = -1
@@ -121,8 +126,6 @@ class Connect4:
 		self.saveAgentModel()
 
 	def playHumanvsYellow(self, n):
-		self.getAgentModel()
-
 		for game in range(n):
 			win = False
 			self.r.eps = 0
@@ -174,13 +177,12 @@ class Connect4:
 				self.y.calculateRating(humanR, 0.5)
 				self.h.calculateRating(yellowR, 0.5)
 
-			print("Human Rating: %s"%(str(c4.h.rating)))
-			print("Yellow Rating: %s"%(str(c4.y.rating)))
+			print("Human Rating: %s"%(str(self.h.rating)))
+			print("Yellow Rating: %s"%(str(self.y.rating)))
 			self.b.resetBoard()
 		self.saveAgentModel()
 
 	def playHumanvsRed(self, n):
-		self.getAgentModel()
 		for game in range(n):
 			win = False
 			self.r.eps = 0
@@ -241,6 +243,9 @@ class Connect4:
 		self.saveAgentModel()
 
 c4 = Connect4()
-# c4.playHumanvsRed(1)
-# print(c4.r.rating)
-# print(c4.y.rating)
+# c4.play(100_000)
+c4.r.train()
+c4.y.train()
+# c4.saveAgentModel()
+c4.saveAgentModel()
+
