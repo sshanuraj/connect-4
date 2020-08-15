@@ -15,6 +15,13 @@ class Connect4:
 		self.getAgentModel()
 		self.b = c4Board()
 
+	def checkParams(self):
+		print("NN input array length for RED Agent:", len(self.r.nnInp))
+		print("State value length for RED Agent:", len(self.r.state_value))
+
+		print("NN input array length for YELLOW Agent:", len(self.y.nnInp))
+		print("State value length for YELLOW Agent:", len(self.y.state_value))
+
 	def getAgentModel(self):
 		filenames = ["1_agent.model", "2_agent.model", "h_agent.model"]
 		i = 0
@@ -54,8 +61,8 @@ class Connect4:
 	def play(self, n):
 		# print(len(self.y.state_value))
 		# print(len(self.r.state_value))
-		self.r.setEpsilon(0.85)
-		self.y.setEpsilon(0.85)
+		self.r.setEpsilon(0)
+		self.y.setEpsilon(0)
 		for game in range(n):
 			win = False
 			if game%20000 == 0 and game != 0:
@@ -71,6 +78,8 @@ class Connect4:
 			for i in range(42):
 				if i%2 == 0:
 					col = -1
+					h_ini = self.r.getHash(self.b.board)
+					self.r.nnInp.append(h_ini)
 					if self.r.eps < rd.uniform(0, 1):
 						col = self.r.getBestMove(self.b)
 					else:
@@ -93,6 +102,8 @@ class Connect4:
 						break
 				else:
 					col = -1
+					h_ini = self.y.getHash(self.b.board)
+					self.y.nnInp.append(h_ini)
 					if self.y.eps < rd.uniform(0, 1):
 						col = self.y.getBestMove(self.b)
 					else:
@@ -152,7 +163,7 @@ class Connect4:
 				else:   #yellow agent move
 					col = -1
 					if self.y.eps < rd.uniform(0, 1):
-						col = self.y.getBestMove(self.b)
+						col = self.y.getBestMoveNN(self.b)
 					else:
 						col = self.y.getRandomMove(self.b)
 
@@ -195,7 +206,7 @@ class Connect4:
 				if i%2 == 0:  #red agent move
 					col = -1
 					if self.r.eps < rd.uniform(0, 1):
-						col = self.r.getBestMove(self.b)
+						col = self.r.getBestMoveNN(self.b)
 					else:
 						col = self.r.getRandomMove(self.b)
 
@@ -243,10 +254,11 @@ class Connect4:
 		self.saveAgentModel()
 
 c4 = Connect4()
-# # c4.play(100_000)
-# c4.r.train()
-# c4.y.train()
-# # c4.saveAgentModel()
-# c4.saveAgentModel()
-c4.playHumanvsYellow(1)
+c4.play(100000)
+c4.r.train()
+c4.y.train()
+c4.saveAgentModel()
+
+# c4.playHumanvsYellow(1)
+c4.checkParams()
 

@@ -1,6 +1,5 @@
 import numpy as np 
 
-
 class c4Board:
 	def __init__(self):
 		self.board = np.zeros((6, 7))
@@ -43,6 +42,16 @@ class c4Board:
 			if count == 4:
 				return True
 		return False
+
+	def checkForWinningMove(self, color):
+		bcopy = self.board.copy()
+		for i in range(7):
+			if self.cols[i] >= 0:
+				bcopy[self.cols[i]][i] = color
+				if self.checkWinVirtual(bcopy, self.cols[i], i):
+					return i
+				bcopy[self.cols[i]][i] = 0
+		return -1
 
 	def checkHorizontal(self, board, lastMove):
 		x = lastMove[0]
