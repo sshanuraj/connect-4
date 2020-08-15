@@ -79,7 +79,7 @@ class Connect4:
 				if i%2 == 0:
 					col = -1
 					h_ini = self.r.getHash(self.b.board)
-					self.r.nnInp.append(h_ini)
+					self.r.nnInp.add(h_ini)
 					if self.r.eps < rd.uniform(0, 1):
 						col = self.r.getBestMove(self.b)
 					else:
@@ -103,7 +103,7 @@ class Connect4:
 				else:
 					col = -1
 					h_ini = self.y.getHash(self.b.board)
-					self.y.nnInp.append(h_ini)
+					self.y.nnInp.add(h_ini)
 					if self.y.eps < rd.uniform(0, 1):
 						col = self.y.getBestMove(self.b)
 					else:
@@ -254,7 +254,7 @@ class Connect4:
 		self.saveAgentModel()
 
 c4 = Connect4()
-c4.play(100000)
+c4.play(1)
 c4.r.train()
 c4.y.train()
 c4.saveAgentModel()

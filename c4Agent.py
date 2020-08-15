@@ -15,11 +15,9 @@ class Agent:
 		self.alpha = alpha
 		self.state_value = {}
 		self.game_states = []
-		self.nnInp = []
+		self.nnInp = set()
 		self.rating = 1600
 		self.nnModel = 0
-		self.X = []
-		self.Y = []
 		self.initNNModel()
 
 	def initNNModel(self):
@@ -33,13 +31,13 @@ class Agent:
 
 	def train(self):
 		print("Start Training for Model %s."%(str(self.color)))
-		self.X, self.Y = self.getNNInput()
-		print("Shape for input and labels:", self.X.shape, self.Y.shape)
+		X, Y = self.getNNInput()
+		print("Shape for input and labels:", X.shape, Y.shape)
 		self.nnModel.load_weights("nn_%s_weights.h5"%(str(self.color)))
 
-		sgd = optimizers.SGD(lr = 1, clipnorm = 1.)
+		sgd = optimizers.SGD(lr = 0.5, clipnorm = 1.)
 		self.nnModel.compile(loss = "mse", optimizer = sgd, metrics = ["accuracy"])
-		self.nnModel.fit(self.X, self.Y, epochs = 100)
+		self.nnModel.fit(X, Y, epochs = 100)
 		self.nnModel.save_weights("nn_%s_weights.h5"%(str(self.color)))
 
 		print("Training complete....Model For %s Saved" % (str(self.color)))
